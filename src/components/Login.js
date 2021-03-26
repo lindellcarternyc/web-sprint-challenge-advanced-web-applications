@@ -1,24 +1,90 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import axios from 'axios'
 
-const Login = () => {
-  // make a post request to retrieve a token from the api
-  // when you have handled the token, navigate to the BubblePage route
+const INITIAL_FORM_STATE = {
+  username: '',
+  password: ''
+}
+
+const Login = ({ history }) => {
+  const [values, setValues] = useState(INITIAL_FORM_STATE)
 
   useEffect(()=>{
-    // make a post request to retrieve a token from the api
-    // when you have handled the token, navigate to the BubblePage route
-  });
+    const token = window.localStorage.getItem('bubbles-token')
+    if (token) {
+      history.push(`/bubbles`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
-  const error = "";
-  //replace with error state
+  const [error, setError] = useState('')
+
+  const handleChange = (evt) => {
+    setValues({
+      ...values,
+      [evt.target.name]: evt.target.value
+    })
+    setError('')
+  }
+
+  const handleSubmit = (evt) => {
+    evt.preventDefault()
+
+    const username = values.username.trim()
+    const password = values.password.trim()
+
+    if (!username || !password) {
+      return setError('Username or Password not valid')
+    }
+
+    setValues(INITIAL_FORM_STATE)
+
+    axios.post('http://localhost:5000/api/login', { username, password })
+      .then(res => {
+        const token = res.data.payload
+        window.localStorage.setItem('bubbles-token', token)
+        history.push('/bubbles')
+      })
+      .catch(_ => {
+        setError('Username or Password not valid')
+      })
+  }
 
   return (
     <div>
       <h1>Welcome to the Bubble App!</h1>
       <div data-testid="loginForm" className="login-form">
-        <h2>Build login form here</h2>
+        <h2>Login</h2>
       </div>
-
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Username: </label>
+          <input 
+            data-testid="username" 
+            type="text" 
+            name="username" 
+            id="username" 
+            value={values.username}
+            onChange={handleChange}
+          />
+        </div>
+        <div 
+          style={{
+            marginTop: '1rem'
+          }}
+        >
+          <label htmlFor="password">Password: </label>
+          <input 
+            data-testid="password"
+            type="password"
+            id="password"
+            name="password"
+            value={values.password}
+            onChange={handleChange}
+          />
+        </div>
+        <button type="submit">Login</button>
+      </form>
       <p data-testid="errorMessage" className="error">{error}</p>
     </div>
   );
