@@ -14,7 +14,8 @@ const Login = ({ history }) => {
     if (token) {
       history.push(`/bubbles`)
     }
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const [error, setError] = useState('')
 
@@ -42,6 +43,7 @@ const Login = ({ history }) => {
       .then(res => {
         const token = res.data.payload
         window.localStorage.setItem('bubbles-token', token)
+        history.push('/bubbles')
       })
       .catch(_ => {
         setError('Username or Password not valid')
